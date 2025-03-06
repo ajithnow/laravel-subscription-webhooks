@@ -1,5 +1,5 @@
 {
-    "name": "your-vendor/laravel-subscription-webhooks",
+    "name": "ajithnow/laravel-subscription-webhooks",
     "description": "Laravel package for handling Apple and Google subscription webhooks",
     "type": "library",
     "license": "MIT",
