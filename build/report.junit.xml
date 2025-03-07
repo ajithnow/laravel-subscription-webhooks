@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="" tests="19" assertions="35" errors="0" warnings="0" failures="4" skipped="0" time="0.047981">
+    <testsuite name="Unit" tests="19" assertions="35" errors="0" warnings="0" failures="4" skipped="0" time="0.047981">
+      <testsuite name="Tests\SubscriptionWebhooks\Laravel\Core\AppleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/AppleWebhookHandlerTest.php" tests="7" assertions="13" errors="0" warnings="0" failures="3" skipped="0" time="0.013496">
+        <testcase name="testValidatePayloadWithValidData" class="Tests\SubscriptionWebhooks\Laravel\Core\AppleWebhookHandlerTest" classname="Tests.SubscriptionWebhooks.Laravel.Core.AppleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/AppleWebhookHandlerTest.php" line="23" assertions="1" time="0.008446">
+          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\SubscriptionWebhooks\Laravel\Core\AppleWebhookHandlerTest::testValidatePayloadWithValidData
+Failed asserting that false is true.
+
+/var/www/html/tests/Laravel/Core/AppleWebhookHandlerTest.php:30</failure>
+        </testcase>
+        <testcase name="testValidatePayloadWithInvalidData" class="Tests\SubscriptionWebhooks\Laravel\Core\AppleWebhookHandlerTest" classname="Tests.SubscriptionWebhooks.Laravel.Core.AppleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/AppleWebhookHandlerTest.php" line="36" assertions="1" time="0.000262"/>
+        <testcase name="testValidatePayloadWithInvalidJson" class="Tests\SubscriptionWebhooks\Laravel\Core\AppleWebhookHandlerTest" classname="Tests.SubscriptionWebhooks.Laravel.Core.AppleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/AppleWebhookHandlerTest.php" line="48" assertions="1" time="0.000083"/>
+        <testcase name="testProcessPayloadInitialBuy" class="Tests\SubscriptionWebhooks\Laravel\Core\AppleWebhookHandlerTest" classname="Tests.SubscriptionWebhooks.Laravel.Core.AppleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/AppleWebhookHandlerTest.php" line="58" assertions="3" time="0.003178"/>
+        <testcase name="testProcessPayloadRenewal" class="Tests\SubscriptionWebhooks\Laravel\Core\AppleWebhookHandlerTest" classname="Tests.SubscriptionWebhooks.Laravel.Core.AppleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/AppleWebhookHandlerTest.php" line="75" assertions="3" time="0.000588"/>
+        <testcase name="testProcessPayloadUnknownType" class="Tests\SubscriptionWebhooks\Laravel\Core\AppleWebhookHandlerTest" classname="Tests.SubscriptionWebhooks.Laravel.Core.AppleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/AppleWebhookHandlerTest.php" line="92" assertions="3" time="0.000563">
+          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\SubscriptionWebhooks\Laravel\Core\AppleWebhookHandlerTest::testProcessPayloadUnknownType
+Failed asserting that null matches expected '12345'.
+
+/var/www/html/tests/Laravel/Core/AppleWebhookHandlerTest.php:103</failure>
+        </testcase>
+        <testcase name="testProcessPayloadInvalidJson" class="Tests\SubscriptionWebhooks\Laravel\Core\AppleWebhookHandlerTest" classname="Tests.SubscriptionWebhooks.Laravel.Core.AppleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/AppleWebhookHandlerTest.php" line="109" assertions="1" time="0.000376">
+          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\SubscriptionWebhooks\Laravel\Core\AppleWebhookHandlerTest::testProcessPayloadInvalidJson
+Failed asserting that exception of type "JsonException" is thrown.</failure>
+        </testcase>
+      </testsuite>
+      <testsuite name="Tests\SubscriptionWebhooks\Laravel\Core\GoogleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/GoogleWebhookHandlerTest.php" tests="9" assertions="17" errors="0" warnings="0" failures="1" skipped="0" time="0.001757">
+        <testcase name="testValidatePayloadWithValidData" class="Tests\SubscriptionWebhooks\Laravel\Core\GoogleWebhookHandlerTest" classname="Tests.SubscriptionWebhooks.Laravel.Core.GoogleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/GoogleWebhookHandlerTest.php" line="23" assertions="1" time="0.001208"/>
+        <testcase name="testValidatePayloadWithInvalidData" class="Tests\SubscriptionWebhooks\Laravel\Core\GoogleWebhookHandlerTest" classname="Tests.SubscriptionWebhooks.Laravel.Core.GoogleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/GoogleWebhookHandlerTest.php" line="38" assertions="1" time="0.000047"/>
+        <testcase name="testValidatePayloadWithInvalidJson" class="Tests\SubscriptionWebhooks\Laravel\Core\GoogleWebhookHandlerTest" classname="Tests.SubscriptionWebhooks.Laravel.Core.GoogleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/GoogleWebhookHandlerTest.php" line="50" assertions="1" time="0.000042"/>
+        <testcase name="testProcessPayloadSubscriptionRecovered" class="Tests\SubscriptionWebhooks\Laravel\Core\GoogleWebhookHandlerTest" classname="Tests.SubscriptionWebhooks.Laravel.Core.GoogleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/GoogleWebhookHandlerTest.php" line="60" assertions="3" time="0.000150"/>
+        <testcase name="testProcessPayloadSubscriptionRenewed" class="Tests\SubscriptionWebhooks\Laravel\Core\GoogleWebhookHandlerTest" classname="Tests.SubscriptionWebhooks.Laravel.Core.GoogleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/GoogleWebhookHandlerTest.php" line="79" assertions="3" time="0.000056"/>
+        <testcase name="testProcessPayloadOneTimePurchased" class="Tests\SubscriptionWebhooks\Laravel\Core\GoogleWebhookHandlerTest" classname="Tests.SubscriptionWebhooks.Laravel.Core.GoogleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/GoogleWebhookHandlerTest.php" line="98" assertions="3" time="0.000040"/>
+        <testcase name="testProcessPayloadUnknownSubscriptionType" class="Tests\SubscriptionWebhooks\Laravel\Core\GoogleWebhookHandlerTest" classname="Tests.SubscriptionWebhooks.Laravel.Core.GoogleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/GoogleWebhookHandlerTest.php" line="117" assertions="2" time="0.000034"/>
+        <testcase name="testProcessPayloadTestNotification" class="Tests\SubscriptionWebhooks\Laravel\Core\GoogleWebhookHandlerTest" classname="Tests.SubscriptionWebhooks.Laravel.Core.GoogleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/GoogleWebhookHandlerTest.php" line="135" assertions="2" time="0.000031"/>
+        <testcase name="testProcessPayloadInvalidJson" class="Tests\SubscriptionWebhooks\Laravel\Core\GoogleWebhookHandlerTest" classname="Tests.SubscriptionWebhooks.Laravel.Core.GoogleWebhookHandlerTest" file="/var/www/html/tests/Laravel/Core/GoogleWebhookHandlerTest.php" line="152" assertions="1" time="0.000147">
+          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\SubscriptionWebhooks\Laravel\Core\GoogleWebhookHandlerTest::testProcessPayloadInvalidJson
+Failed asserting that exception of type "JsonException" is thrown.</failure>
+        </testcase>
+      </testsuite>
+      <testsuite name="Tests\Laravel\Core\WebhookProcessorTest" file="/var/www/html/tests/Laravel/Core/WebhookProcessorTest.php" tests="3" assertions="5" errors="0" warnings="0" failures="0" skipped="0" time="0.032729">
+        <testcase name="testRegisterHandler" class="Tests\Laravel\Core\WebhookProcessorTest" classname="Tests.Laravel.Core.WebhookProcessorTest" file="/var/www/html/tests/Laravel/Core/WebhookProcessorTest.php" line="21" assertions="1" time="0.019807"/>
+        <testcase name="testProcessWithValidHandler" class="Tests\Laravel\Core\WebhookProcessorTest" classname="Tests.Laravel.Core.WebhookProcessorTest" file="/var/www/html/tests/Laravel/Core/WebhookProcessorTest.php" line="30" assertions="2" time="0.010764"/>
+        <testcase name="testProcessWithNoSuitableHandler" class="Tests\Laravel\Core\WebhookProcessorTest" classname="Tests.Laravel.Core.WebhookProcessorTest" file="/var/www/html/tests/Laravel/Core/WebhookProcessorTest.php" line="54" assertions="2" time="0.002158"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>
