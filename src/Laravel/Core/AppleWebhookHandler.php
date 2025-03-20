@@ -14,8 +14,31 @@ use Firebase\JWT\Key;
  */
 class AppleWebhookHandler extends AbstractWebhookHandler
 {
+
     /** @var array|null Decoded JWT payload data */
     protected ?array $decodedData = null;
+
+    /**
+     * Sets the logger instance.
+     * 
+     * @param \Psr\Log\LoggerInterface $logger
+     * @return $this
+     */
+    public function setLogger(\Psr\Log\LoggerInterface $logger): self
+    {
+        $this->logger = $logger;
+        return $this;
+    }
+
+    /**
+     * Gets the decoded data (for testing purposes).
+     * 
+     * @return array|null
+     */
+    public function getDecodedData(): ?array
+    {
+        return $this->decodedData;
+    }
 
     /**
      * Validates Apple webhook payload and extracts JWT payload.
@@ -30,9 +53,14 @@ class AppleWebhookHandler extends AbstractWebhookHandler
             }
 
             $decodedPayload = $this->decodeJwtPayload($data['signedPayload']);
+            
             if (!$decodedPayload) {
                 return false;
             }
+
+            $decodedPayload["decodedTransactionInfo"] = $this->decodeJwtPayload($decodedPayload["data"]["signedTransactionInfo"]);
+            $decodedPayload["decodedRenewalInfo"] = $this->decodeJwtPayload($decodedPayload["data"]["signedRenewalInfo"]);
+
 
             if (!$this->verifyAppleSignature($data['signedPayload'])) {
                 $this->logger->warning('Apple webhook signature verification failed', [
@@ -53,11 +81,13 @@ class AppleWebhookHandler extends AbstractWebhookHandler
 
     /**
      * Processes the Apple subscription notification.
+     * 
+     * @throws JsonException When the payload is not valid JSON
      */
-    public function processPayload(string $payload): WebhookResponse
+    public function processPayload(?string $payload): WebhookResponse
     {
-        $data = json_decode($payload, true);
-        $notificationType = $data['notificationType'] ?? 'unknown';
+        $data = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+        $notificationType = $this->decodedData['notificationType'] ?? $data['notificationType'] ?? 'unknown';
 
         return match ($notificationType) {
             'INITIAL_BUY' => $this->handleSubscriptionEvent('initial_purchase', $data),
@@ -106,8 +136,8 @@ class AppleWebhookHandler extends AbstractWebhookHandler
         try {
             $response = Http::get('https://appleid.apple.com/auth/keys');
             if (!$response->successful()) {
-                 $this->logError('Failed to fetch Apple public keys', null, $response->body());
-                 return null;
+                $this->logError('Failed to fetch Apple public keys', null, $response->body());
+                return null;
             }
 
             foreach ($response->json()['keys'] ?? [] as $key) {

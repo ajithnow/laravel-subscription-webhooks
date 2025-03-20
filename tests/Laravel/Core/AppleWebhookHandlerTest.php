@@ -6,32 +6,56 @@ use PHPUnit\Framework\TestCase;
 use SubscriptionWebhooks\Laravel\Core\AppleWebhookHandler;
 use SubscriptionWebhooks\Laravel\Core\WebhookResponse;
 use JsonException;
+use Psr\Log\LoggerInterface;
+use Mockery;
 
 class AppleWebhookHandlerTest extends TestCase
 {
     private AppleWebhookHandler $handler;
+    private LoggerInterface $mockLogger;
 
-    protected function setUp(): void
+    public function setUp(): void
     {
         parent::setUp();
-        $this->handler = new AppleWebhookHandler();
+
+        // Create the handler (partial mock if needed)
+        $this->handler = Mockery::mock(AppleWebhookHandler::class)
+            ->makePartial();
+
+        // Mock verifyAppleSignature to return true for tests
+        $this->handler->shouldReceive('verifyAppleSignature')
+            ->andReturn(true);
+
+        // Set up logger properly using the setter
+        $logger = Mockery::mock(\Psr\Log\LoggerInterface::class);
+        $logger->shouldReceive('warning')->andReturn(null);
+        $logger->shouldReceive('error')->andReturn(null);
+        $this->handler->setLogger($logger);
     }
 
-    /**
-     * Test valid payload validation
-     */
-    public function testValidatePayloadWithValidData(): void
+    public function testValidatePayloadWithValidData()
     {
-        $payload = json_encode([
-            'notificationType' => 'INITIAL_BUY',
-            'originalTransactionId' => '12345',
+        // Create a valid signed payload
+        $validPayload = json_encode([
+            'signedPayload' => 'header.eyJub3RpZmljYXRpb25UeXBlIjoiSU5JVElBTF9CVVkifQ.signature'
         ]);
 
-        $this->assertTrue($this->handler->validatePayload($payload));
+        $result = $this->handler->validatePayload($validPayload);
+
+        $this->assertTrue($result);
+        $this->assertEquals(
+            ['notificationType' => 'INITIAL_BUY'],
+            $this->handler->getDecodedData()
+        );
+    }
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
     }
 
     /**
-     * Test invalid payload validation (missing notificationType)
+     * Test invalid payload validation (missing signedPayload)
      */
     public function testValidatePayloadWithInvalidData(): void
     {
@@ -57,12 +81,23 @@ class AppleWebhookHandlerTest extends TestCase
      */
     public function testProcessPayloadInitialBuy(): void
     {
+        // Create a mock handler for processPayload tests
+        $mockHandler = Mockery::mock(AppleWebhookHandler::class)->makePartial();
+        $mockHandler->shouldReceive('logUnknownEvent')->andReturnUsing(function ($type, $payload) {
+            return new WebhookResponse(
+                status: WebhookResponse::STATUS_IGNORED,
+                eventType: 'unknown',
+                subscriptionId: json_decode($payload, true)['originalTransactionId'] ?? null,
+                additionalData: ['raw_type' => $type]
+            );
+        });
+
         $payload = json_encode([
             'notificationType' => 'INITIAL_BUY',
             'originalTransactionId' => '12345',
         ]);
 
-        $response = $this->handler->processPayload($payload);
+        $response = $mockHandler->processPayload($payload);
 
         $this->assertInstanceOf(WebhookResponse::class, $response);
         $this->assertEquals('initial_purchase', $response->eventType);
@@ -74,12 +109,23 @@ class AppleWebhookHandlerTest extends TestCase
      */
     public function testProcessPayloadRenewal(): void
     {
+        // Create a mock handler for processPayload tests
+        $mockHandler = Mockery::mock(AppleWebhookHandler::class)->makePartial();
+        $mockHandler->shouldReceive('logUnknownEvent')->andReturnUsing(function ($type, $payload) {
+            return new WebhookResponse(
+                status: WebhookResponse::STATUS_IGNORED,
+                eventType: 'unknown',
+                subscriptionId: json_decode($payload, true)['originalTransactionId'] ?? null,
+                additionalData: ['raw_type' => $type]
+            );
+        });
+
         $payload = json_encode([
             'notificationType' => 'RENEWAL',
             'originalTransactionId' => '12345',
         ]);
 
-        $response = $this->handler->processPayload($payload);
+        $response = $mockHandler->processPayload($payload);
 
         $this->assertInstanceOf(WebhookResponse::class, $response);
         $this->assertEquals('renewal', $response->eventType);
@@ -91,12 +137,23 @@ class AppleWebhookHandlerTest extends TestCase
      */
     public function testProcessPayloadUnknownType(): void
     {
+        // Create a mock handler for processPayload tests
+        $mockHandler = Mockery::mock(AppleWebhookHandler::class)->makePartial();
+        $mockHandler->shouldReceive('logUnknownEvent')->andReturnUsing(function ($type, $payload) {
+            return new WebhookResponse(
+                status: WebhookResponse::STATUS_IGNORED,
+                eventType: 'unknown',
+                subscriptionId: json_decode($payload, true)['originalTransactionId'] ?? null,
+                additionalData: ['raw_type' => $type]
+            );
+        });
+
         $payload = json_encode([
             'notificationType' => 'UNKNOWN_TYPE',
             'originalTransactionId' => '12345',
         ]);
 
-        $response = $this->handler->processPayload($payload);
+        $response = $mockHandler->processPayload($payload);
 
         $this->assertInstanceOf(WebhookResponse::class, $response);
         $this->assertEquals('unknown', $response->eventType);
