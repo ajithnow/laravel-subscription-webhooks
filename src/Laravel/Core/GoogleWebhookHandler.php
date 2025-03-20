@@ -10,8 +10,6 @@ use JsonException;
  */
 class GoogleWebhookHandler extends AbstractWebhookHandler
 {
-    private const GOOGLE_ENDPOINT = 'https://www.googleapis.com/androidpublisher/v3/notifications';
-
     /**
      * Validate Google webhook signature
      */
@@ -45,91 +43,100 @@ class GoogleWebhookHandler extends AbstractWebhookHandler
 
     /**
      * Process Google subscription notification
+     *
+     * @param string $payload The JSON payload to process
+     * @return WebhookResponse The response containing event details
+     * @throws JsonException When the payload is not valid JSON
      */
     public function processPayload(string $payload): WebhookResponse
     {
-        $data = json_decode($payload, true);
-        
-        // Handle test notifications
-        if (isset($data['testNotification'])) {
+        try {
+            $data = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+            
+            // Handle test notifications
+            if (isset($data['testNotification'])) {
+                return new WebhookResponse(
+                    status: WebhookResponse::STATUS_SUCCESS,
+                    eventType: 'test_notification',
+                    additionalData: $data
+                );
+            }
+            
+            // Handle subscription notifications
+            if (isset($data['subscriptionNotification'])) {
+                $notificationType = $data['subscriptionNotification']['notificationType'] ?? null;
+                
+                switch ($notificationType) {
+                    case 1: // SUBSCRIPTION_RECOVERED
+                        return $this->handleRecovered($data);
+                    case 2: // SUBSCRIPTION_RENEWED
+                        return $this->handleRenewed($data);
+                    case 3: // SUBSCRIPTION_CANCELED
+                        return $this->handleCanceled($data);
+                    case 4: // SUBSCRIPTION_PURCHASED
+                        return $this->handlePurchased($data);
+                    case 5: // SUBSCRIPTION_ON_HOLD
+                        return $this->handleOnHold($data);
+                    case 6: // SUBSCRIPTION_IN_GRACE_PERIOD
+                        return $this->handleGracePeriod($data);
+                    case 7: // SUBSCRIPTION_RESTARTED
+                        return $this->handleRestarted($data);
+                    case 8: // SUBSCRIPTION_PRICE_CHANGE_CONFIRMED
+                        return $this->handlePriceChangeConfirmed($data);
+                    case 9: // SUBSCRIPTION_DEFERRED
+                        return $this->handleDeferred($data);
+                    case 10: // SUBSCRIPTION_PAUSED
+                        return $this->handlePaused($data);
+                    case 11: // SUBSCRIPTION_PAUSE_SCHEDULE_CHANGED
+                        return $this->handlePauseScheduleChanged($data);
+                    case 12: // SUBSCRIPTION_REVOKED
+                        return $this->handleRevoked($data);
+                    case 13: // SUBSCRIPTION_EXPIRED
+                        return $this->handleExpired($data);
+                    default:
+                        $this->logger->warning('Unknown Google subscription notification type', [
+                            'type' => $notificationType,
+                            'payload' => $payload
+                        ]);
+                        return new WebhookResponse(
+                            status: WebhookResponse::STATUS_IGNORED,
+                            eventType: 'unknown_subscription',
+                            additionalData: ['raw_type' => $notificationType]
+                        );
+                }
+            }
+            
+            // Handle one-time product notifications
+            if (isset($data['oneTimeProductNotification'])) {
+                $notificationType = $data['oneTimeProductNotification']['notificationType'] ?? null;
+                
+                switch ($notificationType) {
+                    case 1: // ONE_TIME_PRODUCT_PURCHASED
+                        return $this->handleOneTimePurchased($data);
+                    case 2: // ONE_TIME_PRODUCT_CANCELED
+                        return $this->handleOneTimeCanceled($data);
+                    default:
+                        $this->logger->warning('Unknown Google one-time notification type', [
+                            'type' => $notificationType,
+                            'payload' => $payload
+                        ]);
+                        return new WebhookResponse(
+                            status: WebhookResponse::STATUS_IGNORED,
+                            eventType: 'unknown_one_time',
+                            additionalData: ['raw_type' => $notificationType]
+                        );
+                }
+            }
+            
             return new WebhookResponse(
-                status: WebhookResponse::STATUS_SUCCESS,
-                eventType: 'test_notification',
+                status: WebhookResponse::STATUS_FAILED,
+                eventType: 'unknown',
                 additionalData: $data
             );
+        } catch (JsonException $e) {
+            // Re-throw the exception to satisfy the test expectation
+            throw $e;
         }
-        
-        // Handle subscription notifications
-        if (isset($data['subscriptionNotification'])) {
-            $notificationType = $data['subscriptionNotification']['notificationType'] ?? null;
-            
-            switch ($notificationType) {
-                case 1: // SUBSCRIPTION_RECOVERED
-                    return $this->handleRecovered($data);
-                case 2: // SUBSCRIPTION_RENEWED
-                    return $this->handleRenewed($data);
-                case 3: // SUBSCRIPTION_CANCELED
-                    return $this->handleCanceled($data);
-                case 4: // SUBSCRIPTION_PURCHASED
-                    return $this->handlePurchased($data);
-                case 5: // SUBSCRIPTION_ON_HOLD
-                    return $this->handleOnHold($data);
-                case 6: // SUBSCRIPTION_IN_GRACE_PERIOD
-                    return $this->handleGracePeriod($data);
-                case 7: // SUBSCRIPTION_RESTARTED
-                    return $this->handleRestarted($data);
-                case 8: // SUBSCRIPTION_PRICE_CHANGE_CONFIRMED
-                    return $this->handlePriceChangeConfirmed($data);
-                case 9: // SUBSCRIPTION_DEFERRED
-                    return $this->handleDeferred($data);
-                case 10: // SUBSCRIPTION_PAUSED
-                    return $this->handlePaused($data);
-                case 11: // SUBSCRIPTION_PAUSE_SCHEDULE_CHANGED
-                    return $this->handlePauseScheduleChanged($data);
-                case 12: // SUBSCRIPTION_REVOKED
-                    return $this->handleRevoked($data);
-                case 13: // SUBSCRIPTION_EXPIRED
-                    return $this->handleExpired($data);
-                default:
-                    $this->logger->warning('Unknown Google subscription notification type', [
-                        'type' => $notificationType,
-                        'payload' => $payload
-                    ]);
-                    return new WebhookResponse(
-                        status: WebhookResponse::STATUS_IGNORED,
-                        eventType: 'unknown_subscription',
-                        additionalData: ['raw_type' => $notificationType]
-                    );
-            }
-        }
-        
-        // Handle one-time product notifications
-        if (isset($data['oneTimeProductNotification'])) {
-            $notificationType = $data['oneTimeProductNotification']['notificationType'] ?? null;
-            
-            switch ($notificationType) {
-                case 1: // ONE_TIME_PRODUCT_PURCHASED
-                    return $this->handleOneTimePurchased($data);
-                case 2: // ONE_TIME_PRODUCT_CANCELED
-                    return $this->handleOneTimeCanceled($data);
-                default:
-                    $this->logger->warning('Unknown Google one-time notification type', [
-                        'type' => $notificationType,
-                        'payload' => $payload
-                    ]);
-                    return new WebhookResponse(
-                        status: WebhookResponse::STATUS_IGNORED,
-                        eventType: 'unknown_one_time',
-                        additionalData: ['raw_type' => $notificationType]
-                    );
-            }
-        }
-        
-        return new WebhookResponse(
-            status: WebhookResponse::STATUS_FAILED,
-            eventType: 'unknown',
-            additionalData: $data
-        );
     }
 
     private function handleRecovered(array $data): WebhookResponse
